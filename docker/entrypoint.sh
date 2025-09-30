@@ -6,6 +6,9 @@ APP_ROOT="/app"
 : "${APP_ENV:=production}"
 : "${APP_DEBUG:=false}"
 
+rm -rf bootstrap/cache/*
+
+
 if [ -z "$APP_KEY" ] || [ "$APP_KEY" = "base64:"* ]; then
     php "$APP_ROOT/artisan" key:generate --force
 fi
@@ -21,11 +24,16 @@ mkdir -p \
 
 chown -R www-data:www-data "$APP_ROOT/storage" "$APP_ROOT/bootstrap/cache"
 chmod -R 775 "$APP_ROOT/storage" "$APP_ROOT/bootstrap/cache"
+find "$APP_ROOT/storage" -type d -exec chmod 775 {} \;
+find "$APP_ROOT/storage" -type f -exec chmod 664 {} \;
+
+
+php $APP_ROOT/artisan optimize
 
 if [ "$APP_ENV" = "production" ]; then
-    php /app/artisan config:cache
-    php /app/artisan route:cache
-    php /app/artisan view:cache
+    php $APP_ROOT/artisan config:cache
+    php $APP_ROOT/artisan route:cache
+    php $APP_ROOT/artisan view:cache
 fi
 
-exec php-fpm
+exec /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf

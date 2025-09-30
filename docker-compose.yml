@@ -11,6 +11,7 @@ services:
             dockerfile: Dockerfile
         depends_on:
             - db
+            - redis
         networks:
             - task_2_network
         environment:
@@ -23,6 +24,8 @@ services:
             DB_DATABASE: "${DB_DATABASE}"
             DB_USERNAME: "${DB_USERNAME}"
             DB_PASSWORD: "${DB_PASSWORD}"
+            REDIS_HOST: "${REDIS_HOST}"
+            REDIS_PORT: "${REDIS_PORT}"
         volumes:
             - app_storage:/app/storage
             - app_cache:/app/bootstrap/cache
@@ -64,6 +67,14 @@ services:
             - "3306:3306"
         volumes:
             - mysql_data:/var/lib/mysql
+    redis:
+        image: redis:7-alpine
+        container_name: task_2_redis
+        restart: unless-stopped
+        ports:
+            - "6380:6379"
+        networks:
+            - task_2_network
 
 volumes:
     app_storage:

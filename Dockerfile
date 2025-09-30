@@ -21,35 +21,25 @@ COPY . .
 RUN composer dump-autoload --optimize
 FROM php:8.3-fpm
 
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+     supervisor procps curl \
+     libzip-dev libpng-dev libonig-dev libicu-dev libxml2-dev libpq-dev \
+     autoconf pkg-config build-essential \
+  && docker-php-ext-install pdo pdo_mysql zip bcmath mbstring xml gd intl \
+  && pecl channel-update pecl.php.net \
+  && pecl install redis \
+  && docker-php-ext-enable redis \
+  && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+     autoconf pkg-config build-essential \
+  && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    unzip \
-    libzip-dev \
-    libpng-dev \
-    libonig-dev \
-    libicu-dev \
-    libxml2-dev \
-    libpq-dev \
-    gcc \
-    make \
-    && docker-php-ext-install \
-    pdo_mysql \
-    zip \
-    bcmath \
-    mbstring \
-    xml \
-    gd \
-    intl \
-    opcache \
-    && pecl install -o -f redis \
-    && docker-php-ext-enable redis \
-    && apt-get purge -y --auto-remove \
-    && rm -rf /var/lib/apt/lists/*
-
+RUN mkdir -p /etc/supervisor/conf.d \
+    && mkdir -p /var/log/supervisor
 
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+
+COPY docker/supervisor/*.conf /etc/supervisor/conf.d/
 
 WORKDIR /app
 

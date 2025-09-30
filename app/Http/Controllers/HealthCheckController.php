@@ -10,7 +10,7 @@ use Throwable;
 
 final class HealthCheckController extends AbstractApiController
 {
-    // В отдельный пайплайн выносить не буду, это для докера
+    // В отдельный сервис выносить не буду, это для докера
     public function checkHealth(): JsonResponse
     {
         try {
