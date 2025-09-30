@@ -16,12 +16,17 @@ readonly class AmountRule implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (!preg_match('/^\d{1,36}(\.\d{1,10})?$/', $value)) {
-            $fail("The :attribute is too great or too low");
+            $fail("The :attribute has an invalid format");
             return;
         }
 
         if (bccomp($value, '0', 8) <= 0) {
             $fail("The :attribute is negative");
+            return;
+        }
+
+        if (bccomp($value, '0.01', 10) < 0) {
+            $fail("The :attribute must be at least 0.01");
         }
     }
 }

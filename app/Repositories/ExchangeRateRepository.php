@@ -24,12 +24,18 @@ final readonly class ExchangeRateRepository implements ExchangeRateRepositoryInt
             ->get()
             ->all();
 
-        return Arr::map($data, static function (ExchangeRate $result) {
+        $mapped = Arr::map($data, static function (ExchangeRate $result) {
             return new ExchangeRateDto(
                 toCurrency: new CurrencySymbolValueObject((string)$result->symbol),
                 rate: new AmountValueObject((string)$result->rate)
             );
         });
+
+        usort($mapped, static function (ExchangeRateDto $dto1, ExchangeRateDto $dto2) {
+            return bccomp($dto1->rate->getAmount(), $dto2->rate->getAmount(), 10);
+        });
+
+        return $mapped;
     }
 
     /** @inheritDoc */
